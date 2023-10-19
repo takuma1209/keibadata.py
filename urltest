@@ -1,0 +1,557 @@
+import pandas as pd
+import numpy as np
+
+yearStart = 2010#2009#開始年を入力
+yearEnd = 2022#2022#終了年を入力 
+
+yearList = np.arange(yearStart, yearEnd+1, 1, int)
+data=[]
+
+for for_year in yearList:
+    var_path = "C:/Users/bergt/OneDrive/デスクトップ/keibadeta/" +str(for_year)+".csv"
+    var_data = pd.read_csv(var_path,encoding="SHIFT-JIS",header=None)
+    data.append(var_data)
+
+nameList,jockyList,umabanList,timeList,oddsList,passList,weightList,dWeightList,sexList,oldList,handiList,agariList,ninkiList = [],[],[],[],[],[],[],[],[],[],[],[],[]
+umaList = [nameList,jockyList,umabanList,timeList,oddsList,passList,weightList,dWeightList,sexList,oldList,handiList,agariList,ninkiList]
+
+raceNameList,dateList,courseList,classList,surfaceList,distanceList,rotationList,surCondiList,weatherList = [],[],[],[],[],[],[],[],[]
+infoList=[raceNameList,dateList,courseList,classList,surfaceList,distanceList,rotationList,surCondiList,weatherList]
+
+tanList,fukuList,umarenList,wideList,umatanList,renpukuList,rentanList = [],[],[],[],[],[],[]
+paybackList = [tanList,fukuList,umarenList,wideList,umatanList,renpukuList,rentanList]
+
+
+for for_year in range(len(data)):
+    for for_race in range(len(data[for_year][0])):
+        var_dataReplaced = data[for_year][0][for_race].replace(' ','').replace('[','').replace('\'','').split("]")
+        var = var_dataReplaced[0].split(",")
+        var_allNumber = len(var)#出走馬の数
+        #馬の名前
+        nameList.append(var)
+        #騎手
+        jockyList.append(var_dataReplaced[1].split(",")[1:])
+        #馬番
+        umabanList.append(list(map(int,var_dataReplaced[2].split(",")[1:])))
+        #走破時間
+        var = var_dataReplaced[3].split(",")[1:]
+        var1 = []
+        for n in range(var_allNumber):
+            try:
+                var2 = var[n].split(":")
+                var1.append(float(var2[0])*60 + float(var2[1]))
+            except ValueError:
+                var1.append(var1[-1])#ひとつ前の値で補間する
+        timeList.append(var1)
+        #オッズ
+        var = var_dataReplaced[4].split(",")[1:]
+        var1 = []
+        for n in range(var_allNumber):
+            try:
+                var1.append(float(var[n]))
+            except ValueError:
+                var1.append(var1[-1])#ひとつ前の値で補間する
+        oddsList.append(var1)
+        #通過
+        var = var_dataReplaced[5].split(",")[1:]
+        var1 = []
+        for n in range(var_allNumber):
+            try:
+                var1.append(np.average(np.array(list(map(int,var[n].split("-")))))/var_allNumber)
+            except ValueError:
+                var1.append(var1[-1])#ひとつ前の値で補間する
+        passList.append(var1)
+        #体重
+        var = var_dataReplaced[6].split(",")[1:]
+        var1 = []
+        var2 = []
+        for n in range(var_allNumber):
+            try:
+                var1.append(int(var[n].split("(")[0]))
+                var2.append(int(var[n].split("(")[1][0:-1]))
+            except ValueError:
+                var1.append(var2[-1])
+                var2.append(var2[-1])
+        weightList.append(var1)
+        dWeightList.append(var2)
+        #性齢
+        var = var_dataReplaced[7].split(",")[1:]
+        var1 = []
+        var2 = []
+        for n in range(var_allNumber):
+            var11 = var[n][0]
+            if "牡" in var11:
+                var1.append(0)
+            elif "牝" in var11:
+                var1.append(1)
+            elif "セ" in var11:
+                var1.append(2)
+            else:
+                print(var11)
+            var2.append(int(var[n][1:]))
+        sexList.append(var1)
+        oldList.append(var2)
+        #斤量
+        handiList.append(list(map(float,var_dataReplaced[8].split(",")[1:])))
+        #上がり
+        var = var_dataReplaced[9].split(",")[1:]
+        var1 = []
+        for n in range(var_allNumber):
+            try:
+                var1.append(float(var[n]))
+            except ValueError:
+                var1.append(var1[-1])#ひとつ前の値で補間する
+        agariList.append(var1)
+        #人気
+        var = var_dataReplaced[10].split(",")[1:]
+        var1 = []
+        for n in range(var_allNumber):
+            try:
+                var1.append(int(var[n]))
+            except ValueError:
+                var1.append(var1[-1])#ひとつ前の値で補間する
+        ninkiList.append(var1)
+
+        var_infoReplaced = data[for_year][1][for_race].replace(' ','').replace('[','').replace('\'','').split("]")[:-2]
+        #レースの名前
+        raceNameList.append(var_infoReplaced[0])
+        #日付
+        var = var_infoReplaced[1]
+        var1 = var.split("年")
+        var2 = var1[1].split("月")
+        dateList.append((int(var1[0].replace(",",""))-yearStart)*365+int(var2[0])*30+int(var2[1].split("日")[0]))
+        #競馬場
+        var = var_infoReplaced[2]
+        if "札幌" in var:
+            courseList.append(0)
+        elif "函館" in var:
+            courseList.append(1)
+        elif "福島" in var:
+            courseList.append(2)
+        elif "新潟" in var:
+            courseList.append(3)
+        elif "東京" in var:
+            courseList.append(4)
+        elif "中山" in var:
+            courseList.append(5)
+        elif "中京" in var:
+            courseList.append(6)
+        elif "京都" in var:
+            courseList.append(7)
+        elif "阪神" in var:
+            courseList.append(8)
+        elif "小倉" in var:
+            courseList.append(9)
+        else:
+            print(var)
+        #クラス
+        var = var_infoReplaced[0]
+        var1 = var_infoReplaced[3]
+        if "障害" in var1:
+            classList.append(0)
+        elif "G1" in var:
+            classList.append(10)
+        elif "G2" in var:
+            classList.append(9)
+        elif "G3" in var:
+            classList.append(8)
+        elif ("(L)" in var) or ("オープン" in var1):
+            classList.append(7)
+        elif ("3勝" in var1) or ("1600" in var1):
+            classList.append(6)
+        elif ("2勝" in var1) or ("1000" in var1):
+            classList.append(5)
+        elif ("1勝" in var1) or ("500" in var1):
+            classList.append(4)
+        elif "新馬" in var1:
+            classList.append(3)
+        elif "未勝利" in var1:
+            classList.append(2)
+        else:
+            print(var)
+        #芝、ダート
+        var = var_infoReplaced[4]
+        if "芝" in var:
+            surfaceList.append(0)
+        elif "ダ" in var:
+            surfaceList.append(1)
+        elif "障" in var:
+            surfaceList.append(2)
+        else:
+            print(var)
+        #距離
+        distanceList.append(int(var_infoReplaced[5].replace(",","")))
+        #回り
+        var = var_infoReplaced[6]
+        if "右" in var:
+            rotationList.append(0)
+        elif "左" in var:
+            rotationList.append(1)
+        elif ("芝" in var) or ("直" in var):
+            rotationList.append(2)
+        else:
+            print(var)
+        #馬場状態
+        var = var_infoReplaced[7]
+        if "良" in var:
+            surCondiList.append(0)
+        elif "稍" in var:
+            surCondiList.append(1)
+        elif "重" in var:
+            surCondiList.append(2)
+        elif "不" in var:
+            surCondiList.append(3)
+        else:
+            print(var)
+        #天気
+        var = var_infoReplaced[8]
+        if "晴" in var:
+            weatherList.append(0)
+        elif "曇" in var:
+            weatherList.append(1)
+        elif "小" in var:
+            weatherList.append(2)
+        elif "雨" in var:
+            weatherList.append(3)
+        elif "雪" in var:
+            weatherList.append(4)
+        else:
+            print(var)
+
+        #単勝、複勝、馬連、ワイド、馬単、三連複、三連単の順番で格納
+        var_paybackReplaced = data[for_year][2][for_race].replace('[','').replace(",","").replace('\'','').split("]")
+        #単勝
+        tanList.append(int(var_paybackReplaced[0].split(" ")[1]))
+        #複勝
+        var = var_paybackReplaced[1].split(" ")[1:]
+        var_list = []
+        for for_var in range(int(len(var)/2)):
+            var_list.append(int(var[2*for_var+1]))
+        fukuList.append(var_list)
+        #馬連
+        umarenList.append(int(var_paybackReplaced[2].split(" ")[-1]))
+        #ワイド
+        var = var_paybackReplaced[3].split(" ")[1:]
+        var_list = []
+        for for_var in range(int(len(var)/4)):
+            var_list.append(int(var[4*for_var+3]))
+        wideList.append(var_list)
+        #馬単
+        umatanList.append(int(var_paybackReplaced[4].split(" ")[-1]))
+        #三連複
+        renpukuList.append(int(var_paybackReplaced[5].split(" ")[-1]))
+        #三連単
+        rentanList.append(int(var_paybackReplaced[6].split(" ")[-1]))
+
+data = []
+for for_races in range(len(nameList)):
+    var_list = []#uma,info,payback
+    for for_lists in umaList:
+        var_list.append(for_lists[for_races])
+    for for_lists in infoList:
+        var_list.append(for_lists[for_races])
+    for for_lists in paybackList:
+        var_list.append(for_lists[for_races])
+    data.append(var_list)
+data = sorted(data, key = lambda x: x[14],reverse = True)#日付が大きい順番に並べる
+'''
+data
+第一指数：全レース数
+第二指数：0~28でレースの情報
+'''
+#print(data[3])
+#print(data[0])
+
+print("データ数: " + str(len(data)))
+
+
+
+
+
+#print(type(data[0][0][0]))
+
+
+
+var_name = [ 'c{0:02d}'.format(i) for i in range(18) ]#列名を先に作らないと読み込めない
+var_pastIndex = np.array(pd.read_csv("C:/Users/bergt/OneDrive/デスクトップ/keibadeta/keibadeta2010_2022_index.csv",encoding="SHIFT-JIS",header=None,names = var_name))
+#第一インデックス：レース数、　第二インデックス：馬番、　第三インデックス：過去何レース前で何着か
+pastIndex = []
+for for_races in range(len(var_pastIndex)):
+    var0 = var_pastIndex[for_races]
+    var_listUmaban = []
+    for for_umaban in range(len(var0)):
+        var1 = var0[for_umaban]
+#        print(type(var1),var1)
+        if var1 is np.nan:#nanを削除するために
+            continue
+        else:
+            var2 = var1.replace(", [","A").replace("[","").replace("]","").split("A")
+        var_listPast = []
+#        print(len(var2),var2,var1,type(var1),"xxx")
+        for for_past in range(len(var2)):
+            try:
+                var_listPast.append(np.array(var2[for_past].replace(",","").split(" "),dtype=np.int64))
+            except ValueError:#前走がない時、空のリストで埋める
+#                print(len(var2),var2,var1,"xxx")
+                var_listPast.append([])
+        var_listUmaban.append(var_listPast)
+    pastIndex.append(var_listUmaban)
+
+
+
+
+
+
+#print(pastIndex[0],"a")
+#print(data[0][0])
+#print(data[144][0])
+
+#print(1/0)
+
+
+
+
+
+
+import itertools
+xListBefore = []
+yListBefore = []
+oddsListBefore = []
+oddsListBeforeFuku = []
+umarenListBefore = []
+umatanListBefore = []
+sanrentanListBefore = []
+sanrenpukuListBefore = []
+wideListBefore = []
+indexList = []
+#pastIndex = pastIndexComped
+var_addNum = 7#他の馬のタイム上位何頭分の過去データを説明変数に加えるか    7? default=5
+decreaseRate = 1#ダミーへのペナルティー
+need = 5#前何走使うか      
+otherNeed = 1#他の馬は前何走使うか
+
+#print(np.shape(pastIndex))
+y_ave=[]   #kajima
+#######
+nnnxtotal=0
+xaverage=0
+xmax=0
+xmin=1000
+dis=0
+distdic={}
+xdi=[]
+xd=[]
+nnncount=0
+
+for i in range(10):
+    xd.append({})
+    xdi.append({})
+
+def makeXParamList(n):#n番目のレースの説明変数のリストを作る、後々のことを考えて関数化
+    var_data = data[n]
+    allNum = len(var_data[0])
+    xNList = []
+    yNList = []
+    global nnnxtotal, xaverage, xmax, xmin, dis, xset, xdistdic,nnncount
+    for nn in range(allNum):#nnは出走馬数に対応
+#        print(pastIndex[n][nn][0])
+#        if len(pastIndex[n][nn][0]) < 0: #過去データが全くない馬が1頭でもいるか
+        if 3 < 0: #過去データが全くない馬が1頭でもいるか
+#            print("1")
+            break
+#        if len(pastIndex[n][nn]) <= 0:#過去データが2以下の馬が1頭でもいるか
+#            print("2")
+#            break
+#        if allNum<var_addNum+2:#var_addNum+1いないと説明変数が足りないため
+#            print("3")
+#            break
+    else:#過去データ数が条件を満たしていると確認した時
+        for nn in range(allNum):
+            keibajo=var_data[15] #keibajou
+            klasse=var_data[16] #クラス   dist={1600, 2400, 1800, 2000, 2100, 1300, 1400, 2300}
+            if (klasse==4 or klasse==5) and var_data[20]==0 and var_data[17]==0:   #4:Tokyo ############
+                if var_data[18] in xd[keibajo].keys():
+                    xd[keibajo][var_data[18]]+=1
+                else:
+                    xd[keibajo][var_data[18]]=1
+                    xdi[keibajo][var_data[18]]=0
+                if keibajo==8 and var_data[18]==1800:
+                    nnncount+=1
+                    #print(var_data[18])
+            
+            if (klasse==4 or klasse==5) and var_data[20]==0 and var_data[17]==0:# and var_data[17]==0 and (klasse==4 or klasse==5):
+#                nnnxtotal=nnnxtotal+1
+                uu=0
+#                if "レッドラディエンス" == var_data[0][nn]:
+#                    print(var_data[0][nn],keibajo, var_data[18],klasse)
+                
+                for i in range(3):
+                    uu=uu+var_data[3][i]/3
+                    xdi[keibajo][var_data[18]]+=var_data[3][i]/3
+                #    if var_data[18]==1800 and var_data[20]==0 and var_data[17]==0:
+                #        print(var_data[3][i])
+#                xaverage+=uu
+#                if xmax < uu:
+#                    xmax=uu
+                    
+#                if xmin > uu:
+#                    xmin=uu
+
+#tokyo, {1200: 71.26247649744919, 2000: 120.92805788982298, 1800: 113.96180378852101, 1400: 83.66409909909879, 2200: 133.42436901653576, 1900: 120.65188172042926, 1600: 94.27377985462087}                
+#print(distdic)
+
+
+
+baba_index=np.zeros((4,3))
+baba_i_sum=np.zeros((4,3))
+
+for ni in range(20000):
+    var_data = data[ni]
+    allNum = len(var_data[0])
+    if allNum < 4:
+        print("error")
+    for nn in range(3):
+        klasse=var_data[16]
+        if (klasse==4 ) and var_data[18]==1600:
+            baba_index[var_data[20]][var_data[17]]+=var_data[3][nn]
+            baba_i_sum[var_data[20]][var_data[17]]+=1
+
+baba_i=baba_index/baba_i_sum
+baba_i=baba_i[:,:2]
+print(baba_i)
+            
+#horselist=['ゴルトファルベン','システムリブート','シルヴァーデューク','タイガークリスエス','ダイシンビヨンド','タガノミア','ダノンバビル','テーオーアストル']
+        
+for n in range(10000):#len(pastIndex)):#nはレース数に対応
+    makeXParamList(n)
+#    if n==0:
+#        print(xListBefore)
+#    print(n)
+
+    print("\r" + str(n+1)+"/" + str(len(pastIndex)) + " 完了" , end="")
+
+#print(distdic)
+#print(nnnxtotal,xaverage/nnnxtotal,xmax,xmin)
+print()
+ 
+import copy
+
+xxdi=copy.deepcopy(xdi)
+for keibajo in range(10):
+    for key in xd[keibajo].keys():
+        xdi[keibajo][key]=xdi[keibajo][key]/xd[keibajo][key]
+        xxdi[keibajo][key]=int(xxdi[keibajo][key]/xd[keibajo][key]*100)/100
+        
+
+#distdic=sorted(distdic.items())
+#xdistdic=sorted(xdistdic.items())
+
+#print(xxdi)
+#print(xdi)
+
+import requests
+from bs4 import BeautifulSoup
+url = "https://db.netkeiba.com/race/202308020511/"
+r=requests.get(url)
+soup = BeautifulSoup(r.content, "html.parser")
+soup_span = soup.find_all("span")
+allnum=int((len(soup_span)-6)/3)#馬の数
+
+
+""" 
+import requests
+from bs4 import BeautifulSoup
+
+# Netkeibaの特定のレースページのURL
+url = 'https://www.netkeiba.com/race/202305030211/'
+
+# ページのHTMLを取得
+response = requests.get(url)
+html = response.text
+
+# BeautifulSoupを使ってHTMLを解析
+soup = BeautifulSoup(html, 'html.parser')
+
+# レース情報の部分を抽出
+race_info = soup.find('div', class_='RaceData01')
+print(race_info.text)
+
+# 予想などの情報を抽出
+forecast_info = soup.find('div', class_='ShutubaTable')
+
+# 必要な情報を抽出する方法はサイトのHTML構造に依存します
+# それぞれの情報に対して適切なセレクタを使用してください
+
+# 例：出走馬一覧
+horses = forecast_info.find_all('tr')
+for horse in horses:
+    print(horse.text)
+
+"""  
+
+#馬の情報
+soup_txt_l=soup.find_all(class_="txt_l")
+horselist=[]#馬の名前
+for num in range(allnum):
+    horselist.append(soup_txt_l[4*num].contents[1].contents[0])
+
+soup_tet_c = soup.find_all("td",nowrap="nowrap",class_="txt_c")
+
+lllist = []#斤量
+for num in range(allnum):
+    lllist.append(soup_tet_c[6*num+1].contents[0])
+
+lllist = [float(x) for x in lllist]
+#print(type(float(soup_tet_c[6*num+1].contents[0])))
+#horselist=['ゴルトファルベン','システムリブート','シルヴァーデューク','タイガークリスエス','ダイシンビヨンド','ダノンバビル','テーオーアストル']
+#lllist=[58, 55, 55, 55, 56,  55, 58]
+print(horselist)
+print('xdi',xdi)
+
+
+#######
+
+chorselist=horselist.copy()
+kyori_index={1000:1.7,1200:1.4, 1400:1.2,1500:1.1, 1600:1.0, 1700:0.9, 1800:0.9, 2000:0.8, 2100:0.8, 2200:0.7, 2300:0.7, 2400:0.7,2500:0.6,2600:0.6, 3000:0.5, 3200:0.5, 3600:0.5}
+li = []
+for ni in range(10000):
+    var_data = data[ni]
+    allNum = len(var_data[0])
+    keibajo=var_data[15] #keibajou
+    klasse=var_data[16]
+#    if ni==292:
+#        continue
+ 
+    for nn in range(allNum):
+        #if 'ボルサリーノ'== var_data[0][nn] and keibajo==4 and (klasse==4 or klasse==5):# and var_data[20]==0:
+        if var_data[0][nn] in horselist  and (klasse==2 or klasse==4 or klasse==5):# and var_data[20]==0:
+            #'ボーデン', 'クロワドフェール', 'ボルサリーノ'
+#            if ni==292:
+#                lllist.append(var_data[10][nn])
+#                continue
+            #if nnx==0:
+             #   print(var_data[0][nn], var_data[3][nn])
+            nin=chorselist.index(var_data[0][nn])
+            if var_data[18]==1700:
+                print(keibajo,var_data[0][nn])
+            try:
+                xx=xdi[keibajo][var_data[18]]-var_data[3][nn]
+            except:
+                pass
+#            xxy=xx*(1-(var_data[18]-1600)/1000)-(lllist[nin]-var_data[10][nn])*0.2
+#            xxy=xx*(1.96-var_data[18]*0.78/1400)-(lllist[nin]-var_data[10][nn])*0.2
+
+            xxy=xx*kyori_index[var_data[18]]-(lllist[nin]-var_data[10][nn])*0.2  +  baba_i[var_data[20],var_data[17]]
+            print(xxy,var_data[0][nn])
+            a =tuple([xxy,var_data[0][nn]])
+            li.append(a)
+            horselist.remove(var_data[0][nn])
+            #print(xx,xxy,var_data[18],var_data[3][nn],var_data[20],ni,nn)
+
+
+ # ソート前のリスト
+my_list = li
+# リストをソート
+sorted_list = sorted(my_list, reverse = True)
+# ソート後のリストを表示
+print(sorted_list)
