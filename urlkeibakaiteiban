@@ -524,7 +524,7 @@ for ni in range(10000):
  
     for nn in range(allNum):
         #if 'ボルサリーノ'== var_data[0][nn] and keibajo==4 and (klasse==4 or klasse==5):# and var_data[20]==0:
-        if var_data[0][nn] in horselist  and (klasse==2 or klasse==4 or klasse==5):# and var_data[20]==0:
+        if var_data[0][nn] in horselist: #  and (klasse==2 or klasse==4 or klasse==5):# and var_data[20]==0:
             #'ボーデン', 'クロワドフェール', 'ボルサリーノ'
 #            if ni==292:
 #                lllist.append(var_data[10][nn])
