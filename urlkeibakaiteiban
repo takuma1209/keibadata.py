@@ -3,6 +3,7 @@ import numpy as np
 
 yearStart = 2010#2009#開始年を入力
 yearEnd = 2022#2022#終了年を入力 
+yearEnd = 2023#2022#終了年を入力 
 
 yearList = np.arange(yearStart, yearEnd+1, 1, int)
 data=[]
@@ -422,7 +423,7 @@ print(baba_i)
             
 #horselist=['ゴルトファルベン','システムリブート','シルヴァーデューク','タイガークリスエス','ダイシンビヨンド','タガノミア','ダノンバビル','テーオーアストル']
         
-for n in range(10000):#len(pastIndex)):#nはレース数に対応
+for n in range(20000):#len(pastIndex)):#nはレース数に対応
     makeXParamList(n)
 #    if n==0:
 #        print(xListBefore)
@@ -451,7 +452,7 @@ for keibajo in range(10):
 
 import requests
 from bs4 import BeautifulSoup
-url = "https://db.netkeiba.com/race/202308020511/"
+url = "https://db.netkeiba.com/race/202304040411/"
 r=requests.get(url)
 soup = BeautifulSoup(r.content, "html.parser")
 soup_span = soup.find_all("span")
@@ -514,7 +515,7 @@ print('xdi',xdi)
 chorselist=horselist.copy()
 kyori_index={1000:1.7,1200:1.4, 1400:1.2,1500:1.1, 1600:1.0, 1700:0.9, 1800:0.9, 2000:0.8, 2100:0.8, 2200:0.7, 2300:0.7, 2400:0.7,2500:0.6,2600:0.6, 3000:0.5, 3200:0.5, 3600:0.5}
 li = []
-for ni in range(10000):
+for ni in range(20000):
     var_data = data[ni]
     allNum = len(var_data[0])
     keibajo=var_data[15] #keibajou
@@ -540,8 +541,12 @@ for ni in range(10000):
                 pass
 #            xxy=xx*(1-(var_data[18]-1600)/1000)-(lllist[nin]-var_data[10][nn])*0.2
 #            xxy=xx*(1.96-var_data[18]*0.78/1400)-(lllist[nin]-var_data[10][nn])*0.2
-
-            xxy=xx*kyori_index[var_data[18]]-(lllist[nin]-var_data[10][nn])*0.2  +  baba_i[var_data[20],var_data[17]]
+            try:
+                xxy=xx*kyori_index[var_data[18]]-(lllist[nin]-var_data[10][nn])*0.2  +  baba_i[var_data[20],var_data[17]]
+            except:
+                print('確認',var_data[18])
+                break
+            
             print(xxy,var_data[0][nn])
             a =tuple([xxy,var_data[0][nn]])
             li.append(a)
